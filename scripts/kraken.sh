@@ -36,5 +36,14 @@ RUN="22mBv2"
 # run
 kraken2 --threads 8 --gzip-compressed --output ../temp-local-only/results/"$RUN".out.tsv --report ../temp-local-only/results/"$RUN".report.tsv --db ../temp-local-only/refdb/kraken2-microbial-fatfree "$WDIR"/"$RUN"/fastq/"$RUN".fastq.gz
 
+# add sample number by sed for summary report
+sed "s/^/$RUN\t/g" ../temp-local-only/results/"$RUN".report.tsv | sed "s/[\t][ ]*/\t/g" > ../temp-local-only/results/"$RUN".report.clean.tsv
+cat ../temp-local-only/results/*.report.clean.tsv > ../temp-local-only/results/kraken.summary.tsv
+
+# for by read results
+sed "s/^/$RUN\t/g" ../temp-local-only/results/"$RUN".out.tsv > ../temp-local-only/results/"$RUN".out.clean.tsv
+cat ../temp-local-only/results/*.out.clean.tsv > ../temp-local-only/results/kraken.results-by-read.tsv
+
+
 # viz
 # https://genomics.sschmeier.com/ngs-taxonomic-investigation/index.html#kraken2
