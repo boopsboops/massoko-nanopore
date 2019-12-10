@@ -27,6 +27,41 @@ ktax %>%
     facet_grid(rows=vars(fct_reorder(sample,depth,.desc=FALSE))) #+
     #scale_fill_manual(values=sample(getPalette(n=16)))
 
+# bar with added missing 
+ingroup <- ktax %>%
+    mutate(rank=str_replace_all(rank,"[0-9]","")) %>%
+    filter(rank=="O") %>%
+    group_by(sample) %>%
+    top_n(n=12,percFrag) %>%
+    ungroup() %>%
+    select(scientificName) %>%
+    distinct() %>%
+    pull()
+
+# cols
+excols <- colorRampPalette(brewer.pal(11,"Spectral"))(15)
+
+ktax %>%
+    group_by(sample) %>%
+    mutate(assTot=nClade[rank=="R"],assProp=nClade/assTot) %>%
+    ungroup() %>%
+    mutate(depth=if_else(str_detect(sample,"3"),3,22)) %>%
+    mutate(rank=str_replace_all(rank,"[0-9]","")) %>%
+    filter(rank=="O") %>%
+    filter(scientificName %in% ingroup) %>%
+    group_by(scientificName) %>%
+    mutate(taxTot=mean(nClade)) %>%
+    ungroup() %>%
+    mutate(sample=fct_reorder(sample,depth,.desc=FALSE),scientificName=fct_reorder(scientificName,taxTot,.desc=TRUE)) %>% # reorder the factor
+    ggplot(aes(x=scientificName,y=assProp,fill=scientificName)) +
+    geom_bar(stat="identity") +
+    facet_grid(rows=vars(sample)) +
+    scale_fill_manual(values=excols) +
+    theme_clean() +
+    theme(axis.text.x=element_blank()) +
+    labs(fill="Legend",x="Taxonomy",y="Number of reads")
+
+
 # stacked bar graph
 getPalette <- colorRampPalette(brewer.pal(9,"Set1"))
 set.seed(1)
