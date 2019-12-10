@@ -36,3 +36,13 @@ guppy_basecaller --input_path "$WDIR"/"$RUN"/fast5 --save_path "$WDIR"/"$RUN"/fa
 
 # cat a fastq
 cat "$WDIR"/"$RUN"/fastq/pass/*.fastq.gz > "$WDIR"/"$RUN"/fastq/"$RUN".fastq.gz
+
+# get n reads per sample
+wc -l "$WDIR"/"$RUN"/fastq/sequencing_summary.txt
+
+# get n filtered reads
+seqkit stats -b "$WDIR"/"$RUN"/fastq/"$RUN".fastq.gz
+
+# to qc the minion run
+# https://github.com/roblanf/minion_qc
+Rscript ~/Software/minion_qc/MinIONQC.R -i "$WDIR"/"$RUN"/fastq/sequencing_summary.txt
