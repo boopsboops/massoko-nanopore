@@ -73,15 +73,16 @@ ktax %>%
 
 # NMDS
 ktax %>%
+    #filter(sample!="22mB") %>% # removes 22mB
+    #mutate(sample=if_else(str_detect(sample,"22mB"),"22mB",sample)) %>% # merges 22mB
+    #group_by(scientificName,sample,rank) %>%
+    #summarise(nClade=sum(nClade)) %>%
+    #ungroup() %>%
     group_by(sample) %>%
     mutate(assTot=nClade[rank=="R"],assProp=nClade/assTot) %>%
     ungroup() %>%
     mutate(rank=str_replace_all(rank,"[0-9]","")) %>%
     filter(rank==srank) %>%
-    #filter(sample!="22mB") %>% 
-    #mutate(sampleJoined=if_else(str_detect(sample,"22mB"),"22mB",sample)) %>% 
-    #group_by(scientificName,sampleJoined) %>%
-    #summarise(nClade=sum(nClade)) %>%
     select(scientificName,sample,assProp) %>% 
     pivot_wider(values_from=assProp,names_from=scientificName,values_fill=list(assProp=0)) %>% 
     data.frame(row.names=1) %>%
@@ -146,3 +147,11 @@ write_csv(tab.combined,path="figures/summary-table.csv")
 #    grandparent taxon is at the genus rank.
 # 5. NCBI taxonomic ID number
 # 6. Indented scientific name
+
+
+# export to Krona
+krep %>% 
+    filter(grepl("22",sample)) %>% 
+    filter(classified=="C") %>%
+    select(qid,taxid) %>% 
+    write_tsv("../temp-local-only/results/krona-2m-combined.tsv",col_names=FALSE)
