@@ -46,3 +46,6 @@ seqkit stats -b "$WDIR"/"$RUN"/fastq/"$RUN".fastq.gz
 # to qc the minion run
 # https://github.com/roblanf/minion_qc
 Rscript ~/Software/minion_qc/MinIONQC.R -i "$WDIR"/"$RUN"/fastq/sequencing_summary.txt
+
+# generate md5sums of fastq files
+md5sum "$WDIR"/"$RUN"/fastq/"$RUN".fastq.gz
