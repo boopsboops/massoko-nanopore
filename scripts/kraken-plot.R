@@ -155,3 +155,16 @@ krep %>%
     filter(classified=="C") %>%
     select(qid,taxid) %>% 
     write_tsv("../temp-local-only/results/krona-2m-combined.tsv",col_names=FALSE)
+
+
+# simper analysis
+# see https://www.rdocumentation.org/packages/vegan/versions/2.4-2/topics/simper
+ktax %>%
+    mutate(rank=str_replace_all(rank,"[0-9]","")) %>%
+    filter(rank==srank) %>%
+    select(scientificName,sample,nClade) %>% 
+    pivot_wider(values_from=nClade,names_from=scientificName,values_fill=list(nClade=0)) %>% 
+    data.frame(row.names=1) %>%
+    as.matrix() %>%
+    simper(group=factor(c("deep","deep","deep","shallow","shallow"))) %>%
+    summary(ordered=TRUE)
