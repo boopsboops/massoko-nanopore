@@ -36,7 +36,7 @@ ingroup <- ktax %>%
 excols <- colorRampPalette(brewer.pal(11,"Spectral"))(17)
 
 # run the barplot of proportions
-ktax %>%
+p <- ktax %>%
     group_by(sample) %>%
     mutate(assTot=nClade[rank=="R"],assProp=nClade/assTot) %>%
     ungroup() %>%
@@ -55,6 +55,7 @@ ktax %>%
     theme_light() +
     theme(axis.text.x=element_blank(),panel.grid.major.x=element_blank()) +
     labs(fill="Legend",x="Taxonomy",y="Proportion of assigned reads")
+ggsave(filename="../temp-local-only/barplot.svg",plot=p,width=297,height=210,units="mm")
 
 
 # make a stacked bar graph - not great
@@ -72,7 +73,7 @@ ktax %>%
     theme_classic()
 
 # NMDS
-ktax %>%
+p <- ktax %>%
     #filter(sample!="22mB") %>% # removes 22mB
     #mutate(sample=if_else(str_detect(sample,"22mB"),"22mB",sample)) %>% # merges 22mB
     #group_by(scientificName,sample,rank) %>%
@@ -98,7 +99,7 @@ ktax %>%
     scale_fill_ptol() + 
     scale_color_ptol() +
     theme_bw()
-
+ggsave(filename="../temp-local-only/nmds.svg",plot=p,width=297,height=210,units="mm")
 
 # summary stats
 ktax.tab <- ktax %>%
@@ -131,8 +132,8 @@ krep.tab <- krep %>%
 tab.combined <- bind_rows(krep.tab,ktax.tab)
 
 # write out
-#write_csv(tab,path="../temp-local-only/summary-table.csv")
-write_csv(tab.combined,path="figures/summary-table.csv")
+write_csv(tab.combined,path="../temp-local-only/summary-table.csv")
+#write_csv(tab.combined,path="figures/summary-table.csv")
 
 
 # 1. Percentage of fragments covered by the clade rooted at this taxon
@@ -157,7 +158,7 @@ krep %>%
     write_tsv("../temp-local-only/results/krona-2m-combined.tsv",col_names=FALSE)
 
 
-# simper analysis
+# simper analysis 
 # see https://www.rdocumentation.org/packages/vegan/versions/2.4-2/topics/simper
 ktax %>%
     mutate(rank=str_replace_all(rank,"[0-9]","")) %>%
