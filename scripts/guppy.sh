@@ -1,51 +1,71 @@
 #!/usr/bin/env sh
 
 # install guppy CPU
+# https://community.nanoporetech.com/downloads
 # follow instructions on https://community.nanoporetech.com/protocols/Guppy-protocol/v/gpb_2003_v1_revo_14dec2018
 # sudo apt install ont-guppy-cpu
 
 # set working dirs
 WDIR="../temp-local-only/data/Massoko"
+
+# 2019 runs (low quality)
 RUN="3mA"
 RUN="3mB"
 RUN="22mA"
 RUN="22mB"
 RUN="22mBv2"
+# 2020 runs (low quality)
+RUN="3m-10"
+RUN="7m-8"
+RUN="12m-8"
+RUN="18m-9"
+RUN="22m-25"
+
+# set quality
+QUAL="lowquality"
+QUAL="highquality"
 
 # make a fastq dir
-mkdir "$WDIR"/"$RUN"/fastq
+mkdir -p "$WDIR"/"$RUN"/fastq/"$QUAL"
 #rm -r "$WDIR"/fastq
 
-# check version (3.4.3+f4fc735) and configs
+# check version and configs
+# Nov 2020 = v4.2.2
 guppy_basecaller -h
 guppy_basecaller --version
 guppy_basecaller --print_workflows
 guppy_basecaller --print_workflows | grep "FLO-FLG001" | grep "SQK-LSK109"
 # info
-# https://community.nanoporetech.com/protocols/Guppy-protocol/v/gpb_2003_v1_revo_14dec2018/guppy-basecaller-and-guppy-basecaller-server
+# https://community.nanoporetech.com/protocols/Guppy-protocol/v/gpb_2003_v1_revt_14dec2018/guppy-software-overview
 
 # run guppy (high quality)
-guppy_basecaller --input_path "$WDIR"/"$RUN"/fast5 --save_path "$WDIR"/"$RUN"/fastq --flowcell FLO-FLG001 --kit SQK-LSK109 --qscore_filtering --min_qscore 7 --records_per_fastq 4000 --compress_fastq --progress_stats_frequency 60 --num_callers 1 --cpu_threads_per_caller 7
+guppy_basecaller --input_path "$WDIR"/"$RUN"/fast5 --save_path "$WDIR"/"$RUN"/fastq/"$QUAL" --flowcell FLO-FLG001 --kit SQK-LSK109 --qscore_filtering --min_qscore 7 --records_per_fastq 4000 --compress_fastq --progress_stats_frequency 60 --num_callers 1 --cpu_threads_per_caller 7
 
 # run guppy (low quality) see https://community.nanoporetech.com/posts/help-with-guppy-cpu-versi
-guppy_basecaller --input_path "$WDIR"/"$RUN"/fast5 --save_path "$WDIR"/"$RUN"/fastq --config dna_r9.4.1_450bps_fast.cfg --qscore_filtering --min_qscore 7 --records_per_fastq 4000 --compress_fastq --progress_stats_frequency 60 --num_callers 1 --cpu_threads_per_caller 7
+guppy_basecaller --input_path "$WDIR"/"$RUN"/fast5 --save_path "$WDIR"/"$RUN"/fastq/"$QUAL" --config dna_r9.4.1_450bps_fast.cfg --qscore_filtering --min_qscore 7 --records_per_fastq 4000 --compress_fastq --progress_stats_frequency 60 --num_callers 1 --cpu_threads_per_caller 7
 
 # info 
 # R9.4.1 nanopores - 1D experiments
 # are 'FLO-FLGOP1' the same as 'FLO-FLG001'? - received FLO-FLGOP1 first, then FLO-FLG001
 
 # cat a fastq
-cat "$WDIR"/"$RUN"/fastq/pass/*.fastq.gz > "$WDIR"/"$RUN"/fastq/"$RUN".fastq.gz
+cat "$WDIR"/"$RUN"/fastq/"$QUAL"/pass/*.fastq.gz > "$WDIR"/"$RUN"/fastq/"$QUAL"/"$RUN".fastq.gz
+
+# write up some stats
+guppy_basecaller --version > "$WDIR"/"$RUN"/fastq/"$QUAL"/stats.txt
 
 # get n reads per sample
-wc -l "$WDIR"/"$RUN"/fastq/sequencing_summary.txt
+printf "n reads:\n" >> "$WDIR"/"$RUN"/fastq/"$QUAL"/stats.txt
+wc -l "$WDIR"/"$RUN"/fastq/"$QUAL"/sequencing_summary.txt >> "$WDIR"/"$RUN"/fastq/"$QUAL"/stats.txt
 
 # get n filtered reads
-seqkit stats -b "$WDIR"/"$RUN"/fastq/"$RUN".fastq.gz
+printf "\nn filtered reads:\n" >> "$WDIR"/"$RUN"/fastq/"$QUAL"/stats.txt
+seqkit stats -b "$WDIR"/"$RUN"/fastq/"$QUAL"/"$RUN".fastq.gz >> "$WDIR"/"$RUN"/fastq/"$QUAL"/stats.txt
 
 # to qc the minion run
 # https://github.com/roblanf/minion_qc
-Rscript ~/Software/minion_qc/MinIONQC.R -i "$WDIR"/"$RUN"/fastq/sequencing_summary.txt
+Rscript ~/Software/minion_qc/MinIONQC.R -i "$WDIR"/"$RUN"/fastq/"$QUAL"/sequencing_summary.txt
 
 # generate md5sums of fastq files
-md5sum "$WDIR"/"$RUN"/fastq/"$RUN".fastq.gz
+printf "\nmd5sum:\n" >> "$WDIR"/"$RUN"/fastq/"$QUAL"/stats.txt
+md5sum "$WDIR"/"$RUN"/fastq/"$QUAL"/"$RUN".fastq.gz >> "$WDIR"/"$RUN"/fastq/"$QUAL"/stats.txt
