@@ -62,10 +62,16 @@ wc -l "$WDIR"/"$RUN"/fastq/"$QUAL"/sequencing_summary.txt >> "$WDIR"/"$RUN"/fast
 printf "\nn filtered reads:\n" >> "$WDIR"/"$RUN"/fastq/"$QUAL"/stats.txt
 seqkit stats -b "$WDIR"/"$RUN"/fastq/"$QUAL"/"$RUN".fastq.gz >> "$WDIR"/"$RUN"/fastq/"$QUAL"/stats.txt
 
+# generate md5sums of fastq files
+printf "\nmd5sum:\n" >> "$WDIR"/"$RUN"/fastq/"$QUAL"/stats.txt
+md5sum "$WDIR"/"$RUN"/fastq/"$QUAL"/"$RUN".fastq.gz >> "$WDIR"/"$RUN"/fastq/"$QUAL"/stats.txt
+
 # to qc the minion run
 # https://github.com/roblanf/minion_qc
 Rscript ~/Software/minion_qc/MinIONQC.R -i "$WDIR"/"$RUN"/fastq/"$QUAL"/sequencing_summary.txt
 
-# generate md5sums of fastq files
-printf "\nmd5sum:\n" >> "$WDIR"/"$RUN"/fastq/"$QUAL"/stats.txt
-md5sum "$WDIR"/"$RUN"/fastq/"$QUAL"/"$RUN".fastq.gz >> "$WDIR"/"$RUN"/fastq/"$QUAL"/stats.txt
+# tidy up
+mkdir -p "$WDIR"/"$RUN"/fastq/"$QUAL"/logs
+mkdir -p "$WDIR"/"$RUN"/fastq/"$QUAL"/minion_qc
+mv "$WDIR"/"$RUN"/fastq/"$QUAL"/*.log "$WDIR"/"$RUN"/fastq/"$QUAL"/logs
+mv "$WDIR"/"$RUN"/fastq/"$QUAL"/*.png "$WDIR"/"$RUN"/fastq/"$QUAL"/minion_qc
