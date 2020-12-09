@@ -75,3 +75,29 @@ mkdir -p "$WDIR"/"$RUN"/fastq/"$QUAL"/logs
 mkdir -p "$WDIR"/"$RUN"/fastq/"$QUAL"/minion_qc
 mv "$WDIR"/"$RUN"/fastq/"$QUAL"/*.log "$WDIR"/"$RUN"/fastq/"$QUAL"/logs
 mv "$WDIR"/"$RUN"/fastq/"$QUAL"/*.png "$WDIR"/"$RUN"/fastq/"$QUAL"/minion_qc
+
+
+# porechop for trimming adapters
+# https://github.com/rrwick/Porechop
+# git clone https://github.com/rrwick/Porechop.git
+# cd Porechop
+# python3 setup.py install --prefix=$HOME/.local
+# get help and test
+porechop -h
+
+# trim off adapters
+porechop -i "$WDIR"/"$RUN"/fastq/"$QUAL"/"$RUN".fastq.gz -o "$WDIR"/"$RUN"/fastq/"$QUAL"/"$RUN".trimmed.fastq.gz
+md5sum "$WDIR"/"$RUN"/fastq/"$QUAL"/"$RUN".trimmed.fastq.gz >> "$WDIR"/"$RUN"/fastq/"$QUAL"/stats.txt
+
+# add to 
+
+## TEST ##
+# subsample a test file
+#zcat "$WDIR"/"$RUN"/fastq/"$QUAL"/"$RUN".fastq.gz | seqkit sample -n 10000 -s 42 -o "$WDIR"/"$RUN"/fastq/"$QUAL"/"$RUN".sub.fastq.gz
+# run verbose
+#porechop -i "$WDIR"/"$RUN"/fastq/"$QUAL"/"$RUN".sub.fastq.gz -o "$WDIR"/"$RUN"/fastq/"$QUAL"/"$RUN".sub.trimmed.fastq.gz --verbosity 2
+# run normally
+#porechop -i "$WDIR"/"$RUN"/fastq/"$QUAL"/"$RUN".sub.fastq.gz -o "$WDIR"/"$RUN"/fastq/"$QUAL"/"$RUN".sub.trimmed.fastq.gz
+# test barcodes - none here
+#mkdir "$WDIR"/"$RUN"/fastq/"$QUAL"/barcodes
+#porechop -i "$WDIR"/"$RUN"/fastq/"$QUAL"/"$RUN".sub.fastq.gz -b "$WDIR"/"$RUN"/fastq/"$QUAL"/barcodes
